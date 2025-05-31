@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.expensemanager.R
 import com.example.expensemanager.data.Expense
 import com.example.expensemanager.data.ExpenseType
 import com.example.expensemanager.databinding.ItemTransactionBinding
@@ -54,9 +55,9 @@ class TransactionAdapter(
                 amountTextView.setTextColor(
                     itemView.context.getColor(
                         if (expense.type == ExpenseType.INCOME)
-                            android.R.color.holo_green_dark
+                            R.color.income_green
                         else
-                            android.R.color.holo_red_dark
+                            R.color.expense_red
                     )
                 )
             }

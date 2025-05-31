@@ -66,14 +66,14 @@ class AddTransactionDialogFragment : DialogFragment() {
                     binding.amountInputLayout.prefixText = getString(R.string.currency_symbol)
                     binding.amountInputLayout.suffixText = "+"
                     binding.amountInputLayout.setStartIconTintList(
-                        requireContext().getColorStateList(android.R.color.holo_green_dark)
+                        requireContext().getColorStateList(R.color.income_green)
                     )
                 }
                 binding.expenseRadioButton.id -> {
                     binding.amountInputLayout.prefixText = getString(R.string.currency_symbol)
                     binding.amountInputLayout.suffixText = "-"
                     binding.amountInputLayout.setStartIconTintList(
-                        requireContext().getColorStateList(android.R.color.holo_red_dark)
+                        requireContext().getColorStateList(R.color.expense_red)
                     )
                 }
             }
