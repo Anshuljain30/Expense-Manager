@@ -25,10 +25,14 @@ class AddTransactionDialogFragment : DialogFragment() {
     private val viewModel: ExpenseViewModel by viewModels()
     private var selectedDate: Date = Date()
     private var expenseToEdit: Expense? = null
+    private var transactionType: ExpenseType = ExpenseType.EXPENSE
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NORMAL, com.google.android.material.R.style.ThemeOverlay_MaterialComponents_Dialog_Alert)
+        arguments?.let {
+            transactionType = it.getSerializable("transaction_type") as? ExpenseType ?: ExpenseType.EXPENSE
+        }
     }
 
     override fun onCreateView(
@@ -47,6 +51,14 @@ class AddTransactionDialogFragment : DialogFragment() {
     }
 
     private fun setupViews() {
+        // Set initial transaction type
+        binding.typeRadioGroup.check(
+            when (transactionType) {
+                ExpenseType.INCOME -> binding.incomeRadioButton.id
+                ExpenseType.EXPENSE -> binding.expenseRadioButton.id
+            }
+        )
+
         // Setup category spinner
         val categories = ExpenseCategory.entries.map { it.name }
         val categoryAdapter = ArrayAdapter(
@@ -81,6 +93,14 @@ class AddTransactionDialogFragment : DialogFragment() {
 
         // Set initial date
         updateDateButton()
+
+        // Trigger initial setup of amount input layout
+        binding.typeRadioGroup.check(
+            when (transactionType) {
+                ExpenseType.INCOME -> binding.incomeRadioButton.id
+                ExpenseType.EXPENSE -> binding.expenseRadioButton.id
+            }
+        )
     }
 
     private fun setupClickListeners() {

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.example.expensemanager.data.ExpenseType
 import com.example.expensemanager.databinding.FragmentDashboardBinding
 import com.example.expensemanager.viewmodel.ExpenseViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -49,12 +50,21 @@ class DashboardFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.addExpenseButton.setOnClickListener {
-            // Navigate to add expense dialog
+            showAddTransactionDialog(ExpenseType.EXPENSE)
         }
 
         binding.addIncomeButton.setOnClickListener {
-            // Navigate to add income dialog
+            showAddTransactionDialog(ExpenseType.INCOME)
         }
+    }
+
+    private fun showAddTransactionDialog(type: ExpenseType) {
+        val dialog = AddTransactionDialogFragment.newInstance().apply {
+            arguments = Bundle().apply {
+                putSerializable("transaction_type", type)
+            }
+        }
+        dialog.show(parentFragmentManager, "add_transaction")
     }
 
     override fun onDestroyView() {
