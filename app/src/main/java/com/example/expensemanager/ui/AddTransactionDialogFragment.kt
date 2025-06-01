@@ -63,7 +63,8 @@ class AddTransactionDialogFragment : DialogFragment() {
         val categories = ExpenseCategory.entries.map { it.name }
         val categoryAdapter = ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_dropdown_item_1line,
+            R.layout.item_dropdown,
+            R.id.text1,
             categories
         )
         (binding.categorySpinner as? AutoCompleteTextView)?.apply {
@@ -133,7 +134,8 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     private fun updateDateButton() {
         val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        binding.dateButton.text = dateFormat.format(selectedDate)
+        val formattedDate = dateFormat.format(selectedDate).uppercase()
+        binding.dateButton.text = formattedDate
     }
 
     private fun saveTransaction() {

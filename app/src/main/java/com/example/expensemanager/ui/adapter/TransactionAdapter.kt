@@ -1,6 +1,7 @@
 package com.example.expensemanager.ui.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -47,11 +48,25 @@ class TransactionAdapter(
         fun bind(expense: Expense) {
             binding.apply {
                 categoryTextView.text = expense.category
-                descriptionTextView.text = expense.description
+                
+                // Show description only if it's not blank
+                if (expense.description.isNotBlank()) {
+                    descriptionTextView.text = expense.description
+                    descriptionTextView.visibility = View.VISIBLE
+                } else {
+                    descriptionTextView.visibility = View.GONE
+                }
+                
                 dateTextView.text = dateFormat.format(expense.date)
                 
-                val amountText = String.format(Locale.getDefault(), "₹%.2f", expense.amount)
+                // Format amount with proper sign and color
+                val amountText = when (expense.type) {
+                    ExpenseType.INCOME -> String.format(Locale.getDefault(), "₹%.2f", expense.amount)
+                    ExpenseType.EXPENSE -> String.format(Locale.getDefault(), "₹%.2f", expense.amount)
+                }
                 amountTextView.text = amountText
+                
+                // Set color based on transaction type
                 amountTextView.setTextColor(
                     itemView.context.getColor(
                         if (expense.type == ExpenseType.INCOME)
