@@ -34,7 +34,7 @@ class TransactionAdapter(
         private val binding: ItemTransactionBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        private val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
 
         init {
             itemView.setOnClickListener {

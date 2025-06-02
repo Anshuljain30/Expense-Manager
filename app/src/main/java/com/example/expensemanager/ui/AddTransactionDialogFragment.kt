@@ -15,15 +15,26 @@ import com.example.expensemanager.data.ExpenseType
 import com.example.expensemanager.databinding.DialogAddTransactionBinding
 import com.example.expensemanager.viewmodel.ExpenseViewModel
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 class AddTransactionDialogFragment : DialogFragment() {
     private var _binding: DialogAddTransactionBinding? = null
     private val binding get() = _binding!!
     private val viewModel: ExpenseViewModel by viewModels()
-    private var selectedDate: Date = Date()
+    private val calendar = Calendar.getInstance().apply {
+        timeZone = TimeZone.getDefault()
+    }
+    private var selectedDate: Date
+        get() = calendar.time
+        set(value) {
+            calendar.time = value
+        }
     private var expenseToEdit: Expense? = null
     private var transactionType: ExpenseType = ExpenseType.EXPENSE
 
@@ -32,6 +43,11 @@ class AddTransactionDialogFragment : DialogFragment() {
         setStyle(STYLE_NORMAL, com.google.android.material.R.style.ThemeOverlay_MaterialComponents_Dialog_Alert)
         arguments?.let {
             transactionType = it.getSerializable("transaction_type") as? ExpenseType ?: ExpenseType.EXPENSE
+        }
+        
+        // Initialize with current date/time or edited expense's date/time
+        expenseToEdit?.let {
+            calendar.time = it.date
         }
     }
 
@@ -92,8 +108,8 @@ class AddTransactionDialogFragment : DialogFragment() {
             }
         }
 
-        // Set initial date
-        updateDateButton()
+        // Set initial date and time
+        updateDateTimeButtons()
 
         // Trigger initial setup of amount input layout
         binding.typeRadioGroup.check(
@@ -109,6 +125,10 @@ class AddTransactionDialogFragment : DialogFragment() {
             showDatePicker()
         }
 
+        binding.timeButton.setOnClickListener {
+            showTimePicker()
+        }
+
         binding.saveButton.setOnClickListener {
             saveTransaction()
         }
@@ -121,30 +141,66 @@ class AddTransactionDialogFragment : DialogFragment() {
     private fun showDatePicker() {
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText("Select date")
-            .setSelection(selectedDate.time)
+            .setSelection(calendar.timeInMillis)
             .build()
 
         datePicker.addOnPositiveButtonClickListener { selection ->
-            selectedDate = Date(selection)
-            updateDateButton()
+            // Store current time values
+            val hourOfDay = calendar.get(Calendar.HOUR_OF_DAY)
+            val minute = calendar.get(Calendar.MINUTE)
+            
+            // Update date
+            calendar.timeInMillis = selection
+            calendar.timeZone = TimeZone.getDefault()
+            
+            // Restore time values
+            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+            calendar.set(Calendar.MINUTE, minute)
+            
+            updateDateTimeButtons()
         }
 
         datePicker.show(parentFragmentManager, "date_picker")
     }
 
-    private fun updateDateButton() {
+    private fun showTimePicker() {
+        val timePicker = MaterialTimePicker.Builder()
+            .setTimeFormat(TimeFormat.CLOCK_24H)
+            .setHour(calendar.get(Calendar.HOUR_OF_DAY))
+            .setMinute(calendar.get(Calendar.MINUTE))
+            .setTitleText("Select time")
+            .build()
+
+        timePicker.addOnPositiveButtonClickListener {
+            calendar.set(Calendar.HOUR_OF_DAY, timePicker.hour)
+            calendar.set(Calendar.MINUTE, timePicker.minute)
+            updateDateTimeButtons()
+        }
+
+        timePicker.show(parentFragmentManager, "time_picker")
+    }
+
+    private fun updateDateTimeButtons() {
         val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        val formattedDate = dateFormat.format(selectedDate).uppercase()
-        binding.dateButton.text = formattedDate
+        val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+        
+        binding.dateButton.text = dateFormat.format(calendar.time).uppercase()
+        binding.timeButton.text = timeFormat.format(calendar.time)
     }
 
     private fun saveTransaction() {
-        val amount = binding.amountEditText.text.toString().toDoubleOrNull() ?: return
-        val category = binding.categorySpinner.text.toString()
-        if (category.isBlank()) {
-            binding.categorySpinner.error = "Please select a category"
+        val amount = binding.amountEditText.text.toString().toDoubleOrNull()
+        if (amount == null) {
+            binding.amountInputLayout.error = "Please enter a valid amount"
             return
         }
+        
+        val category = binding.categorySpinner.text.toString()
+        if (category.isBlank()) {
+            binding.categoryInputLayout.error = "Please select a category"
+            return
+        }
+        
         val description = binding.descriptionEditText.text.toString()
         val type = if (binding.typeRadioGroup.checkedRadioButtonId == binding.incomeRadioButton.id) {
             ExpenseType.INCOME
@@ -156,13 +212,13 @@ class AddTransactionDialogFragment : DialogFragment() {
             amount = amount,
             category = category,
             description = description,
-            date = selectedDate,
+            date = calendar.time,
             type = type
         ) ?: Expense(
             amount = amount,
             category = category,
             description = description,
-            date = selectedDate,
+            date = calendar.time,
             type = type
         )
 
